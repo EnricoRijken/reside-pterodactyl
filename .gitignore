@@ -1,0 +1,17 @@
+# Secrets
+**/.env
+.env
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+
+# Temporary files
+*.tmp

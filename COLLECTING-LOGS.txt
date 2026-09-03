@@ -1,0 +1,10 @@
+ReSide Log Collector
+
+Run the collector immediately after reproducing an issue, before stopping, restarting, upgrading, or deleting a world.
+Docker must still be running so managed game-server logs can be captured.
+
+Windows: double-click CollectLogs.bat or run .\CollectLogs.ps1.
+Linux: run bash ./CollectLogs.sh.
+
+The collector writes a ReSide-*-logs-*.zip beside itself and prints the complete path.
+The archive can contain account data, URLs, local paths, and other private diagnostics. Send it only to trusted support staff.

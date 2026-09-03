@@ -1,0 +1,10 @@
+ReSide Backend Servers
+
+1. Install and start Docker Engine or Docker Desktop.
+2. Run start.sh on Linux or start.bat on Windows. Guided setup updates config.toml.
+3. Enter the admin API token the launcher prints when the panel asks for a token.
+4. Create and control game servers on the admin panel's Game Servers page. The API runs each
+   world as its own Linux container; there is nothing to launch by hand.
+5. Run the stop launcher to stop the complete stack while preserving data.
+
+See HOSTING-GUIDE.md for setup, ports, networking, and troubleshooting.

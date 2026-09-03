@@ -1,0 +1,23 @@
+# ReSide hosting configuration
+#
+# Run start.bat (Windows) or start.sh (Linux/macOS) for guided setup. The
+# launcher updates this file and applies it to the complete managed deployment.
+# Secrets and internal Docker settings are stored separately in Api/.env.
+
+[network]
+
+# How players reach this deployment: "lan", "public", "private", or "custom".
+hosting_mode = "public"
+
+# IP address or DNS name given to players. Do not include http:// or a port.
+# LAN mode replaces this with the detected local IPv4 address during startup.
+advertised_address = "213.10.255.142"
+
+# UDP range available to managed game servers. Each running world receives an
+# available port from this range, and the package launcher opens the full range.
+game_port_min = 7777
+game_port_max = 7877
+
+# Optional public API URL for an HTTPS reverse proxy. Leave empty to derive
+# http://<advertised_address>:3000/api automatically.
+public_api_url = ""

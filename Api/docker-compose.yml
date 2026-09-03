@@ -1,0 +1,117 @@
+name: reside-${DEPLOYMENT_ID:?DEPLOYMENT_ID must be set}
+services:
+  api:
+    image: reside-api:${RESIDE_IMAGE_TAG:-latest}
+    restart: unless-stopped
+    init: true
+    ports:
+      - "127.0.0.1:3001:3000"
+      - "3002:3002/udp"
+    environment:
+      DATABASE_URL: postgres://postgres:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}@db:5432/reside
+      REDIS_URL: redis://redis:6379/0
+      JWT_KEY: ${JWT_KEY:?JWT_KEY must be set}
+      ADMIN_API_TOKEN: ${ADMIN_API_TOKEN:?ADMIN_API_TOKEN must be set}
+      DEPLOYMENT_ID: ${DEPLOYMENT_ID:?DEPLOYMENT_ID must be set}
+      RESIDE_NETWORK_NAME: ${RESIDE_NETWORK_NAME:-vSide}
+      RESIDE_SERVER_MOTD: ${RESIDE_SERVER_MOTD:-Welcome back to vSide, We have missed you!}
+      RESIDE_NETWORK_DESCRIPTION: ${RESIDE_NETWORK_DESCRIPTION:-Welcome back to vSide!}
+      NETWORK_DISCOVERY_ENABLED: ${NETWORK_DISCOVERY_ENABLED:-true}
+      NETWORK_DISCOVERY_API_PORT: ${NETWORK_DISCOVERY_API_PORT:-3000}
+      SERVER_MANAGER_DOCKER_SOCKET: /var/run/docker.sock
+      SERVER_MANAGER_IMAGE: ${SERVER_MANAGER_IMAGE:-reside-server:latest}
+      SERVER_MANAGER_DEPLOYMENT_ID: ${DEPLOYMENT_ID:?DEPLOYMENT_ID must be set}
+      SERVER_MANAGER_NETWORK: reside_${DEPLOYMENT_ID}_backend
+      SERVER_MANAGER_NAME_PREFIX: reside-${DEPLOYMENT_ID}-server-
+      SERVER_MANAGER_HOSTING_MODE: ${SERVER_MANAGER_HOSTING_MODE:-custom}
+      SERVER_MANAGER_ADVERTISED_ADDRESS: ${SERVER_MANAGER_ADVERTISED_ADDRESS:?SERVER_MANAGER_ADVERTISED_ADDRESS must be set}
+      SERVER_MANAGER_PUBLIC_API_URL: ${SERVER_MANAGER_PUBLIC_API_URL:-}
+      SERVER_MANAGER_INTERNAL_API_URL: ${SERVER_MANAGER_INTERNAL_API_URL:-http://api:3000/api}
+      SERVER_MANAGER_PORT_MIN: ${SERVER_MANAGER_PORT_MIN:-7777}
+      SERVER_MANAGER_PORT_MAX: ${SERVER_MANAGER_PORT_MAX:-7877}
+      RUST_LOG: ${RUST_LOG:-info}
+      BIND_ADDRESS: 0.0.0.0:3000
+      LOG_TO_STDOUT: "true"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    logging: &default-logging
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 1G
+  web:
+    image: reside-web:${RESIDE_IMAGE_TAG:-latest}
+    restart: unless-stopped
+    init: true
+    ports:
+      - "${ADMIN_BIND_ADDRESS:-0.0.0.0}:3000:80"
+    depends_on:
+      api:
+        condition: service_healthy
+    logging: *default-logging
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+  db:
+    image: reside-postgres:${RESIDE_IMAGE_TAG:-latest}
+    # The packaged image has the LLVM JIT backend removed. Disable JIT explicitly so a cluster
+    # initialized before that change, whose postgresql.conf still sets jit = on, cannot try to
+    # load the missing module.
+    command: ["postgres", "-c", "jit=off"]
+    restart: unless-stopped
+    shm_size: 128mb
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}
+      POSTGRES_DB: reside
+    volumes:
+      - pg_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d reside"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    logging: *default-logging
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 1G
+  redis:
+    image: redis:8.2-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes", "--appendfsync", "everysec"]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    logging: *default-logging
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512M
+volumes:
+  pg_data:
+  redis_data:
+networks:
+  default:
+    name: reside_${DEPLOYMENT_ID}_backend
+    labels:
+      com.reside.managed: "true"
+      com.reside.deployment-id: ${DEPLOYMENT_ID}
