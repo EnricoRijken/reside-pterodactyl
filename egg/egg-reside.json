@@ -1,0 +1,137 @@
+{
+  "_comment": "ReSide Backend draft egg generated for the current ReSide package.",
+  "meta": {
+    "version": "PTDL_v2",
+    "update_url": null
+  },
+  "exported_at": "2026-09-03T13:05:00Z",
+  "name": "ReSide Backend",
+  "author": "enrico@example.com",
+  "description": "Runs the ReSide backend stack and manages world containers through the host Docker socket.",
+  "features": null,
+  "docker_images": {
+    "Ubuntu Runtime": "ghcr.io/parkervcp/yolks:ubuntu"
+  },
+  "file_denylist": [],
+  "startup": "bash /home/container/scripts/entrypoint.sh",
+  "config": {
+    "files": {},
+    "startup": {
+      "done": "ReSide backend ready."
+    },
+    "logs": {
+      "custom": false,
+      "location": "logs/latest.log"
+    },
+    "stop": "bash /home/container/stop.sh"
+  },
+  "scripts": {
+    "installation": {
+      "script": "#!/bin/bash\nset -euo pipefail\n\ncd /mnt/server\n\nexport DEBIAN_FRONTEND=noninteractive\napt-get update\napt-get install -y --no-install-recommends git ca-certificates\n\nif [ -d .git ]; then\n  git fetch --depth 1 origin main\n  git reset --hard origin/main\nelse\n  git clone --depth 1 --branch main https://github.com/EnricoRijken/reside-pterodactyl.git .\nfi\n\nchmod +x start.sh stop.sh start.ps1 stop.ps1 start.bat stop.bat   CollectLogs.sh CollectLogs.ps1 CollectLogs.bat   Api/run.sh Api/stop.sh Api/reset-database.sh   scripts/entrypoint.sh\n\nmkdir -p logs\n",
+      "container": "debian:bookworm-slim",
+      "entrypoint": "bash"
+    }
+  },
+  "variables": [
+    {
+      "name": "Advertised Address",
+      "description": "Public IP or DNS name players should use to reach this ReSide deployment.",
+      "env_variable": "SERVER_MANAGER_ADVERTISED_ADDRESS",
+      "default_value": "",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string|max:255",
+      "field_type": "text"
+    },
+    {
+      "name": "Public API URL",
+      "description": "Optional public API URL. Leave blank to use the default internal API address.",
+      "env_variable": "SERVER_MANAGER_PUBLIC_API_URL",
+      "default_value": "",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "nullable|string|max:255",
+      "field_type": "text"
+    },
+    {
+      "name": "Hosting Mode",
+      "description": "ReSide hosting mode to record in the generated .env file.",
+      "env_variable": "SERVER_MANAGER_HOSTING_MODE",
+      "default_value": "public",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string|max:32",
+      "field_type": "text"
+    },
+    {
+      "name": "World Port Min",
+      "description": "First UDP port available for managed worlds.",
+      "env_variable": "SERVER_MANAGER_PORT_MIN",
+      "default_value": "7777",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|between:1,65535",
+      "field_type": "text"
+    },
+    {
+      "name": "World Port Max",
+      "description": "Last UDP port available for managed worlds.",
+      "env_variable": "SERVER_MANAGER_PORT_MAX",
+      "default_value": "7782",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|between:1,65535",
+      "field_type": "text"
+    },
+    {
+      "name": "Network Name",
+      "description": "Displayed network name inside ReSide.",
+      "env_variable": "RESIDE_NETWORK_NAME",
+      "default_value": "vSide",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string|max:64",
+      "field_type": "text"
+    },
+    {
+      "name": "Network Description",
+      "description": "Displayed network description inside ReSide.",
+      "env_variable": "RESIDE_NETWORK_DESCRIPTION",
+      "default_value": "Welcome back to vSide!",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string|max:255",
+      "field_type": "text"
+    },
+    {
+      "name": "Server MOTD",
+      "description": "Default message of the day for the network.",
+      "env_variable": "RESIDE_SERVER_MOTD",
+      "default_value": "Come as you are. Go anywhere.",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string|max:255",
+      "field_type": "text"
+    },
+    {
+      "name": "Admin Bind Address",
+      "description": "Address used by the web gateway inside the ReSide Docker stack.",
+      "env_variable": "ADMIN_BIND_ADDRESS",
+      "default_value": "0.0.0.0",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string|max:64",
+      "field_type": "text"
+    },
+    {
+      "name": "Log Level",
+      "description": "Rust log level for ReSide services.",
+      "env_variable": "RUST_LOG",
+      "default_value": "info",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string|max:32",
+      "field_type": "text"
+    }
+  ]
+}
