@@ -1,4 +1,4 @@
-﻿{
+{
   "_comment": "DO NOT EDIT: FILE GENERATED AUTOMATICALLY BY PTERODACTYL PANEL - PTERODACTYL.IO",
   "meta": {
     "version": "PTDL_v2",
@@ -22,7 +22,7 @@
   },
   "scripts": {
     "installation": {
-      "script": "#!/bin/bash\nset -euo pipefail\n\ncd /mnt/server\n\nexport DEBIAN_FRONTEND=noninteractive\napt-get update\napt-get install -y --no-install-recommends git ca-certificates\n\nif [ -d .git ]; then\n  git fetch --depth 1 origin main\n  git reset --hard origin/main\nelse\n  git clone --depth 1 --branch main https://github.com/EnricoRijken/reside-pterodactyl.git .\nfi\n\nchmod +x start.sh stop.sh start.ps1 stop.ps1 start.bat stop.bat \\\n  CollectLogs.sh CollectLogs.ps1 CollectLogs.bat \\\n  Api/run.sh Api/stop.sh Api/reset-database.sh \\\n  scripts/entrypoint.sh scripts/install.sh\n\nmkdir -p logs\n",
+      "script": "#!/bin/bash\nset -euo pipefail\n\ncd /mnt/server\n\nexport DEBIAN_FRONTEND=noninteractive\napt-get update\napt-get install -y --no-install-recommends git ca-certificates\n\nif [ -d .git ]; then\n  git fetch --depth 1 origin main\n  git reset --hard origin/main\nelse\n  git clone --depth 1 https://github.com/EnricoRijken/reside-pterodactyl.git .\nfi\n\nchmod +x start.sh stop.sh start.ps1 stop.ps1 start.bat stop.bat \\\n  CollectLogs.sh CollectLogs.ps1 CollectLogs.bat \\\n  Api/run.sh Api/stop.sh Api/reset-database.sh \\\n  scripts/entrypoint.sh scripts/install.sh\n\nmkdir -p logs\n",
       "container": "debian:bookworm-slim",
       "entrypoint": "bash"
     }
@@ -130,3 +130,4 @@
     }
   ]
 }
+
